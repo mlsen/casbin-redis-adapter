@@ -34,7 +34,9 @@ func (suite *RedisAdapterTestSuite) TestNewAdapterFromClient() {
 }
 
 func (suite *RedisAdapterTestSuite) TestNewAdapterFromURL() {
-	url := "redis://localhost:6379/0"
+	// We have to use the random port from dockertest here
+	url := fmt.Sprintf("redis://%s/%d", suite.client.Options().Addr, suite.client.Options().DB)
+
 	_, err := redisadapter.NewFromURL(url)
 	suite.NoError(err)
 }
