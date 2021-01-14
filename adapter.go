@@ -133,6 +133,7 @@ func (a *Adapter) addPolicy(ctx context.Context, rule string) (err error) {
 	return
 }
 
+// RemovePolicy removes a policy rule from the storage.
 func (a *Adapter) RemovePolicy(_ string, ptype string, rule []string) (err error) {
 	ctx := context.Background()
 
@@ -146,6 +147,7 @@ func (a *Adapter) removePolicy(ctx context.Context, rule string) (err error) {
 	return
 }
 
+// RemoveFilteredPolicy removes policy rules that match the filter from the storage.
 func (a *Adapter) RemoveFilteredPolicy(sec string, ptype string, fieldIndex int, fieldValues ...string) error {
 	return errors.New("not implemented")
 }
