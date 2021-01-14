@@ -14,9 +14,11 @@ import (
 )
 
 const (
+	// The key under which the policies are stored in redis
 	PolicyKey = "casbin:policy"
 )
 
+// Adapter is an adapter for policy storage based on Redis
 type Adapter struct {
 	redisCli *redis.Client
 }
@@ -46,15 +48,19 @@ func NewFromClient(redisCli *redis.Client) (adapter *Adapter) {
 // LoadPolicy loads all policy rules from the storage.
 func (a *Adapter) LoadPolicy(model model.Model) (err error) {
 	ctx := context.Background()
+
+	// Using the LoadPolicyLine handler from the Casbin repo for building rules
 	return a.loadPolicy(ctx, model, persist.LoadPolicyLine)
 }
 
 func (a *Adapter) loadPolicy(ctx context.Context, model model.Model, handler func(string, model.Model)) (err error) {
+	// 0, -1 fetches all entries from the list
 	rules, err := a.redisCli.LRange(ctx, PolicyKey, 0, -1).Result()
 	if err != nil {
-		return fmt.Errorf("failed to load policy: %v", err)
+		return err
 	}
 
+	// Parse the rules from Redis
 	for _, rule := range rules {
 		handler(rule, model)
 	}
@@ -67,18 +73,21 @@ func (a *Adapter) SavePolicy(model model.Model) (err error) {
 	ctx := context.Background()
 	var rules []string
 
+	// Serialize the policies into a string slice
 	for ptype, assertion := range model["p"] {
 		for _, rule := range assertion.Policy {
 			rules = append(rules, buildRuleStr(ptype, rule))
 		}
 	}
 
+	// Append the group policies to the slice
 	for ptype, assertion := range model["g"] {
 		for _, rule := range assertion.Policy {
 			rules = append(rules, buildRuleStr(ptype, rule))
 		}
 	}
 
+	// If an empty ruleset is saved, the policy is completely deleted from Redis.
 	if len(rules) > 0 {
 		return a.savePolicy(ctx, rules)
 	}
@@ -86,6 +95,8 @@ func (a *Adapter) SavePolicy(model model.Model) (err error) {
 }
 
 func (a *Adapter) savePolicy(ctx context.Context, rules []string) (err error) {
+	// Use a transaction for deleting the key & creating a new one.
+	// This only uses one round trip to Redis and also makes sure nothing bad happens.
 	cmd, err := a.redisCli.TxPipelined(ctx, func(tx redis.Pipeliner) error {
 		tx.Del(ctx, PolicyKey)
 		tx.RPush(ctx, PolicyKey, strToInterfaceSlice(rules)...)
@@ -93,7 +104,7 @@ func (a *Adapter) savePolicy(ctx context.Context, rules []string) (err error) {
 		return nil
 	})
 	if err = cmd[0].Err(); err != nil {
-		return fmt.Errorf("failed to delete old policy: %v", err)
+		return fmt.Errorf("failed to delete policy key: %v", err)
 	}
 	if err = cmd[1].Err(); err != nil {
 		return fmt.Errorf("failed to save policy: %v", err)
