@@ -103,18 +103,20 @@ func (suite *RedisAdapterTestSuite) TestAddPolicy() {
 	e, err := casbin.NewEnforcer("files/model.conf", a)
 	suite.NoError(err)
 
+	// Add policies
 	_, err = e.AddPolicy("bob", "data1", "read")
 	suite.NoError(err)
-
 	_, err = e.AddPolicy("alice", "data1", "write")
 	suite.NoError(err)
 
+	// Clear all policies from memory
 	e.ClearPolicy()
 
 	// Policy is deleted now
 	hasPol := e.HasPolicy("bob", "data1", "read")
 	suite.False(hasPol)
 
+	// Load policies from redis
 	err = e.LoadPolicy()
 	suite.NoError(err)
 
@@ -123,6 +125,32 @@ func (suite *RedisAdapterTestSuite) TestAddPolicy() {
 	suite.True(hasPol)
 	hasPol = e.HasPolicy("alice", "data1", "write")
 	suite.True(hasPol)
+}
+
+func (suite *RedisAdapterTestSuite) TestRemovePolicy() {
+	// Create the adapter
+	a, err := redisadapter.NewFromClient(suite.client)
+	suite.NoError(err)
+
+	// Create a new Enforcer, this time with the redis adapter
+	e, err := casbin.NewEnforcer("files/model.conf", a)
+	suite.NoError(err)
+
+	// Add policy
+	_, err = e.AddPolicy("bob", "data1", "read")
+	suite.NoError(err)
+
+	// Policy is available
+	hasPol := e.HasPolicy("bob", "data1", "read")
+	suite.True(hasPol)
+
+	// Remove the policy
+	_, err = e.RemovePolicy("bob", "data1", "read")
+	suite.NoError(err)
+
+	// Policy is gone
+	hasPol = e.HasPolicy("bob", "data1", "read")
+	suite.False(hasPol)
 }
 
 // SetupTest spins up a Redis instance after each test
