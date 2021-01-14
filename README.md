@@ -40,7 +40,7 @@ func main() {
 }
 ```
 
-### Initialize Adapter from existing [go-redis](https://github.com/go-redis/redis) Client
+## Initialize Adapter from existing [go-redis](https://github.com/go-redis/redis) Client
 
 ```go
 package main
@@ -67,7 +67,11 @@ func main() {
 }
 ```
 
-### License
+## Comparison with the [official Redis Adapter](https://github.com/casbin/redis-adapter/)
+- This Adapter uses [go-redis](https://github.com/go-redis/redis) instead of [Redigo](https://github.com/gomodule/redigo) 
+- This Adapter uses the original CSV format for saving rules to Redis, instead of marshalling them to JSON.
+
+## License
 
 This project is licensed under
 the [Apache 2.0 license](https://github.com/mlsen/casbin-redis-adapter/blob/master/LICENSE).
