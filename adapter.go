@@ -24,8 +24,8 @@ type Adapter struct {
 }
 
 // NewFromDSN returns a new Adapter by using the given DSN.
-// Format: redis://{password}:@{host}:{port}/{database}
-// Example: redis://password:@host:6379/0
+// Format: redis://:{password}@{host}:{port}/{database}
+// Example: redis://:123@localhost:6379/0
 func NewFromURL(url string) (adapter *Adapter, err error) {
 	opt, err := redis.ParseURL(url)
 	if err != nil {

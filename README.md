@@ -18,7 +18,7 @@ import (
 
 func main() {
 	// The adapter can be initialized from a Redis URL
-	a, _ := redisadapter.NewFromURL("redis://password:@localhost:6379/0")
+	a, _ := redisadapter.NewFromURL("redis://:123@localhost:6379/0")
 
 	// Initialize a new Enforcer with the redis adapter
 	e, _ := casbin.NewEnforcer("model.conf", a)
