@@ -9,7 +9,7 @@ import (
 
 	"github.com/casbin/casbin/v2"
 
-	redisadapter "github.com/mlsen/casbin-redis-adapter"
+	redisadapter "github.com/mlsen/casbin-redis-adapter/v2"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/ory/dockertest/v3"
@@ -29,16 +29,17 @@ type RedisAdapterTestSuite struct {
 }
 
 func (suite *RedisAdapterTestSuite) TestNewAdapterFromClient() {
-	_, err := redisadapter.NewFromClient(suite.client)
-	suite.NoError(err)
+	a := redisadapter.NewFromClient(suite.client)
+	suite.NotEmpty(a)
 }
 
 func (suite *RedisAdapterTestSuite) TestNewAdapterFromURL() {
 	// We have to use the random port from dockertest here
 	url := fmt.Sprintf("redis://%s/%d", suite.client.Options().Addr, suite.client.Options().DB)
 
-	_, err := redisadapter.NewFromURL(url)
+	a, err := redisadapter.NewFromURL(url)
 	suite.NoError(err)
+	suite.NotEmpty(a)
 }
 
 func (suite *RedisAdapterTestSuite) TestSavePolicy() {
@@ -50,8 +51,7 @@ func (suite *RedisAdapterTestSuite) TestSavePolicy() {
 	fileModel := e.GetModel()
 
 	// Create the adapter
-	a, err := redisadapter.NewFromClient(suite.client)
-	suite.NoError(err)
+	a := redisadapter.NewFromClient(suite.client)
 
 	// Save the file model to redis
 	err = a.SavePolicy(fileModel)
@@ -98,8 +98,7 @@ func (suite *RedisAdapterTestSuite) TestLoadPolicy() {
 
 func (suite *RedisAdapterTestSuite) TestAddPolicy() {
 	// Create the adapter
-	a, err := redisadapter.NewFromClient(suite.client)
-	suite.NoError(err)
+	a := redisadapter.NewFromClient(suite.client)
 
 	// Create a new Enforcer, this time with the redis adapter
 	e, err := casbin.NewEnforcer("files/model.conf", a)
@@ -131,8 +130,7 @@ func (suite *RedisAdapterTestSuite) TestAddPolicy() {
 
 func (suite *RedisAdapterTestSuite) TestRemovePolicy() {
 	// Create the adapter
-	a, err := redisadapter.NewFromClient(suite.client)
-	suite.NoError(err)
+	a := redisadapter.NewFromClient(suite.client)
 
 	// Create a new Enforcer, this time with the redis adapter
 	e, err := casbin.NewEnforcer("files/model.conf", a)

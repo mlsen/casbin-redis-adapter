@@ -35,12 +35,12 @@ func NewFromURL(url string) (adapter *Adapter, err error) {
 		return nil, fmt.Errorf("failed to ping redis: %v", err)
 	}
 
-	return NewFromClient(redisCli)
+	return NewFromClient(redisCli), nil
 }
 
 // NewFromClient returns a new instance of Adapter from an already existing go-redis client.
-func NewFromClient(redisCli *redis.Client) (adapter *Adapter, err error) {
-	return &Adapter{redisCli: redisCli}, nil
+func NewFromClient(redisCli *redis.Client) (adapter *Adapter) {
+	return &Adapter{redisCli: redisCli}
 }
 
 // LoadPolicy loads all policy rules from the storage.
