@@ -1,0 +1,3 @@
+p, admin, data, read
+p, admin, data, write
+g, bob, admin
