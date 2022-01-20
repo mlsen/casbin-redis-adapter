@@ -63,7 +63,7 @@ func (a *Adapter) loadPolicy(ctx context.Context, model model.Model, handler fun
 
 	// Parse the rules from Redis
 	for _, rule := range rules {
-		handler(strings.Split(rule, ","), model)
+		handler(strings.Split(rule, ", "), model)
 	}
 
 	return
