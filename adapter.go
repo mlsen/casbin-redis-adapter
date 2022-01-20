@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/casbin/casbin/v2/util"
 
@@ -50,10 +51,10 @@ func (a *Adapter) LoadPolicy(model model.Model) (err error) {
 	ctx := context.Background()
 
 	// Using the LoadPolicyLine handler from the Casbin repo for building rules
-	return a.loadPolicy(ctx, model, persist.LoadPolicyLine)
+	return a.loadPolicy(ctx, model, persist.LoadPolicyArray)
 }
 
-func (a *Adapter) loadPolicy(ctx context.Context, model model.Model, handler func(string, model.Model)) (err error) {
+func (a *Adapter) loadPolicy(ctx context.Context, model model.Model, handler func([]string, model.Model)) (err error) {
 	// 0, -1 fetches all entries from the list
 	rules, err := a.redisCli.LRange(ctx, PolicyKey, 0, -1).Result()
 	if err != nil {
@@ -62,7 +63,7 @@ func (a *Adapter) loadPolicy(ctx context.Context, model model.Model, handler fun
 
 	// Parse the rules from Redis
 	for _, rule := range rules {
-		handler(rule, model)
+		handler(strings.Split(rule, ", "), model)
 	}
 
 	return
